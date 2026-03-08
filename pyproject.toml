@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "nostr-agent-mcp"
+version = "0.1.0"
+description = "Nostr identity and encrypted peer-to-peer messaging for autonomous AI agents — as an MCP server"
+readme = "README.md"
+license = { text = "Unlicense" }
+requires-python = ">=3.11"
+keywords = ["bitcoin", "nostr", "mcp", "ai-agent", "nip44", "identity", "encrypted-messaging"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: The Unlicense (Unlicense)",
+    "Programming Language :: Python :: 3",
+    "Topic :: Communications :: Chat",
+    "Topic :: Security :: Cryptography",
+]
+dependencies = [
+    "mcp[cli]>=1.0.0",
+    "websockets>=12.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.23"]
+
+[project.scripts]
+nostr-agent-mcp = "agent_mcp.server:main"
+
+[project.urls]
+Homepage = "https://github.com/spcpza/nostr-agent-mcp"
+Repository = "https://github.com/spcpza/nostr-agent-mcp"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
