@@ -140,6 +140,12 @@ def _has_even_y(point) -> bool:
     return point[1] % 2 == 0
 
 
+def _tagged_hash(tag: str, data: bytes) -> bytes:
+    """BIP-340 tagged hash: SHA256(SHA256(tag) || SHA256(tag) || data)."""
+    tag_hash = _sha256(tag.encode())
+    return _sha256(tag_hash + tag_hash + data)
+
+
 def _schnorr_sign(msg: bytes, privkey_hex: str) -> str:
     """BIP-340 Schnorr signature. Returns 64-byte signature hex."""
     assert len(msg) == 32
@@ -148,14 +154,15 @@ def _schnorr_sign(msg: bytes, privkey_hex: str) -> str:
     if not _has_even_y(P):
         sk = _N - sk
     aux_rand = os.urandom(32)
-    t = sk ^ _int_from_bytes(_sha256(b"BIP0340/aux" + aux_rand))
-    rand = _sha256(b"BIP0340/nonce" + _bytes_from_int(t) + _bytes_from_int(P[0]) + msg)
+    t = sk ^ _int_from_bytes(_tagged_hash("BIP0340/aux", aux_rand))
+    rand = _tagged_hash("BIP0340/nonce", _bytes_from_int(t) + _bytes_from_int(P[0]) + msg)
     k = _int_from_bytes(rand) % _N
+    assert k != 0
     R = _point_mul(k, _G)
     if not _has_even_y(R):
         k = _N - k
     e = _int_from_bytes(
-        _sha256(b"BIP0340/challenge" + _bytes_from_int(R[0]) + _bytes_from_int(P[0]) + msg)
+        _tagged_hash("BIP0340/challenge", _bytes_from_int(R[0]) + _bytes_from_int(P[0]) + msg)
     ) % _N
     sig = _bytes_from_int(R[0]) + _bytes_from_int((k + e * sk) % _N)
     return sig.hex()
